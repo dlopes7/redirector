@@ -1,0 +1,7 @@
+{
+    "controller_url": "http://apdynamics:8090",
+    "user": "admin",
+    "password": "admin",
+    "account": "customer1"
+
+}
