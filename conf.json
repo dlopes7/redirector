@@ -1,5 +1,7 @@
 {
-    "controller_url": "http://apdynamics:8090",
+    "controller_protocol": "http",
+    "controller_host": "appdynamics",
+    "controller_port": "8090",
     "user": "admin",
     "password": "admin",
     "account": "customer1"

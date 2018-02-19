@@ -16,14 +16,20 @@ import (
 
 // Config contains detail for the controller
 type Config struct {
-	ControllerURL string `json:"controller_url"`
-	User          string `json:"user"`
-	Password      string `json:"password"`
-	Account       string `json:"account"`
+	ControllerProtocol string `json:"controller_protocol"`
+	ControllerHost     string `json:"controller_host"`
+	ControllerPort     int    `json:"controller_port"`
+	User               string `json:"user"`
+	Password           string `json:"password"`
+	Account            string `json:"account"`
 }
 
 var confFile *string
-var client = appdrest.NewClient("http", "demo2.appdynamics.com", 80, "resty", "Hwkh718b", "customer1")
+var client *appdrest.Client
+
+func connect(conf Config) {
+	client = appdrest.NewClient(conf.ControllerProtocol, conf.ControllerHost, conf.ControllerPort, conf.User, conf.Password, conf.Account)
+}
 
 func getConfig() Config {
 	raw, err := ioutil.ReadFile(*confFile)
@@ -38,7 +44,6 @@ func getConfig() Config {
 }
 
 func getApplicationIDFromURL(app string) string {
-	fmt.Println(app)
 	application, err := client.Application.GetApplication(app)
 	if err != nil {
 		fmt.Println("Error obtaining application")
@@ -49,7 +54,10 @@ func getApplicationIDFromURL(app string) string {
 
 func redirect(w http.ResponseWriter, r *http.Request) {
 
+	fmt.Println("Recebido:\t ", r.URL.String())
+
 	c := getConfig()
+	connect(c)
 
 	queries := r.URL.Query()
 	toRedirect := ""
@@ -58,9 +66,10 @@ func redirect(w http.ResponseWriter, r *http.Request) {
 	if len(app) > 0 {
 		appid := getApplicationIDFromURL(app[0])
 		newURL := strings.Replace(r.URL.String(), app[0], appid, -1)
+		newURL = strings.Replace(newURL, "?", "", 1)
 
-		toRedirect := fmt.Sprintf("%s/controller/#%s\n", c.ControllerURL, newURL)
-		fmt.Println("Redirecionando para: ", toRedirect)
+		toRedirect = fmt.Sprintf("%s://%s:%d/controller/#%s", c.ControllerProtocol, c.ControllerHost, c.ControllerPort, newURL)
+		fmt.Println("Redirecionando:\t ", toRedirect)
 
 	}
 	http.Redirect(w, r, toRedirect, 301)
