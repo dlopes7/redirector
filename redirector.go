@@ -46,7 +46,8 @@ func getConfig() Config {
 func getApplicationIDFromURL(app string) string {
 	application, err := client.Application.GetApplication(app)
 	if err != nil {
-		fmt.Println("Error obtaining application")
+		fmt.Println("ERROR - Obtaining application", err)
+		return ""
 	}
 	return strconv.Itoa(application.ID)
 
